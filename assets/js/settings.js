@@ -8,10 +8,12 @@
 
 'use strict';
 
-/* ── Chaves de armazenamento ─────────────────────────────────────────────── */
+/* ── Constantes ──────────────────────────────────────────────────────────── */
 
-const CV_THEME_KEY    = 'cleriverse_theme';
-const CV_LOCATION_KEY = 'cleriverse_location';
+const CV_THEME_KEY         = 'cleriverse_theme';
+const CV_LOCATION_KEY      = 'cleriverse_location';
+const COORDINATE_PRECISION = 6;  // casas decimais (~0.1 m de precisão)
+const MODAL_DELAY_MS       = 800; // aguarda Bootstrap inicializar antes de abrir o modal
 
 /* ── Tema ────────────────────────────────────────────────────────────────── */
 
@@ -111,8 +113,8 @@ function cvRequestAutoLocation() {
 
     navigator.geolocation.getCurrentPosition(
         function (pos) {
-            const lat = pos.coords.latitude.toFixed(6);
-            const lon = pos.coords.longitude.toFixed(6);
+            const lat = pos.coords.latitude.toFixed(COORDINATE_PRECISION);
+            const lon = pos.coords.longitude.toFixed(COORDINATE_PRECISION);
 
             const latEl = document.getElementById('locationLat');
             const lonEl = document.getElementById('locationLon');
@@ -139,12 +141,14 @@ function cvRequestAutoLocation() {
 }
 
 function cvSaveLocationFromForm() {
-    const latVal  = document.getElementById('locationLat').value.trim();
-    const lonVal  = document.getElementById('locationLon').value.trim();
+    const latEl  = document.getElementById('locationLat');
+    const lonEl  = document.getElementById('locationLon');
     const formErr = document.getElementById('locationFormError');
 
-    const lat = parseFloat(latVal);
-    const lon = parseFloat(lonVal);
+    if (!latEl || !lonEl) return;
+
+    const lat = parseFloat(latEl.value.trim());
+    const lon = parseFloat(lonEl.value.trim());
 
     if (isNaN(lat) || lat < -90 || lat > 90) {
         if (formErr) {
@@ -187,6 +191,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // caso ainda não existam coordenadas guardadas
     if (!cvGetSavedLocation() && !sessionStorage.getItem('cv_loc_prompted')) {
         sessionStorage.setItem('cv_loc_prompted', '1');
-        setTimeout(cvShowLocationModal, 800);
+        setTimeout(cvShowLocationModal, MODAL_DELAY_MS);
     }
 });
