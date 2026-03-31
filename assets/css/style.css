@@ -1,10 +1,17 @@
 /* ──────────────────────────────────────────────────────────────────────────
    CleriVerse – Folha de estilos principal
-   Tema: espaço sideral (dark mode)
+   Tema: espaço sideral (dark mode) – complementa Bootstrap 5.3
    ────────────────────────────────────────────────────────────────────────── */
 
-/* ── Variáveis ──────────────────────────────────────────────────────────── */
-:root {
+/* ── Variáveis e overrides do Bootstrap ─────────────────────────────────── */
+:root,
+[data-bs-theme="dark"] {
+    --bs-body-bg:         #0d1117;
+    --bs-body-color:      #e6edf3;
+    --bs-card-bg:         #21262d;
+    --bs-border-color:    #30363d;
+    --bs-secondary-bg:    #161b22;
+
     --bg-body:       #0d1117;
     --bg-surface:    #161b22;
     --bg-card:       #21262d;
@@ -28,9 +35,7 @@
     --shadow:        0 4px 24px rgba(0,0,0,0.5);
 }
 
-/* ── Reset / base ────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+/* ── Base ────────────────────────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
 body {
@@ -39,32 +44,26 @@ body {
     font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.6;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a { color: var(--accent); }
+a:hover { color: var(--accent); }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.site-header {
-    background: var(--bg-surface);
+/* ── Navbar ──────────────────────────────────────────────────────────────── */
+.site-navbar {
+    background: var(--bg-surface) !important;
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
 }
 
-.header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 32px;
+.site-navbar .navbar-toggler {
+    border-color: var(--border);
 }
 
+.site-navbar .navbar-toggler-icon {
+    filter: invert(0.7);
+}
+
+/* ── Logo ────────────────────────────────────────────────────────────────── */
 .logo {
     display: flex;
     align-items: center;
@@ -72,19 +71,15 @@ a:hover { text-decoration: underline; }
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 18px;
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
     text-decoration: none;
 }
 
+.logo:hover { text-decoration: none; }
 .logo-icon { font-size: 22px; }
 
-.main-nav {
-    display: flex;
-    gap: 16px;
-    flex: 1;
-}
-
-.nav-link {
+/* ── Nav links ───────────────────────────────────────────────────────────── */
+.site-navbar .nav-link {
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
@@ -93,36 +88,19 @@ a:hover { text-decoration: underline; }
     transition: color .15s, background .15s;
 }
 
-.nav-link:hover,
-.nav-link.active {
+.site-navbar .nav-link:hover,
+.site-navbar .nav-link.active {
     color: var(--text-primary);
     background: var(--bg-hover);
     text-decoration: none;
 }
 
-/* ── Main / Footer ───────────────────────────────────────────────────────── */
-.site-main {
-    flex: 1;
-    max-width: 1200px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 32px 24px 48px;
-}
-
+/* ── Footer ──────────────────────────────────────────────────────────────── */
 .site-footer {
     background: var(--bg-surface);
     border-top: 1px solid var(--border);
-    padding: 16px 24px;
-    text-align: center;
     color: var(--text-muted);
     font-size: 12px;
-}
-
-.footer-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
 }
 
 .footer-note { font-style: italic; }
@@ -158,30 +136,20 @@ a:hover { text-decoration: underline; }
     flex-wrap: wrap;
 }
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 16px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
+.btn-nav {
+    white-space: nowrap;
     background: var(--bg-card);
     color: var(--text-primary);
+    border-color: var(--border);
     font-size: 13px;
     font-family: var(--font-sans);
-    cursor: pointer;
-    transition: background .15s, border-color .15s;
-    text-decoration: none;
 }
 
-.btn:hover {
+.btn-nav:hover {
     background: var(--bg-hover);
     border-color: var(--accent-dim);
     color: var(--accent);
-    text-decoration: none;
 }
-
-.btn-nav { white-space: nowrap; }
 
 .month-form {
     display: flex;
@@ -190,36 +158,30 @@ a:hover { text-decoration: underline; }
     justify-content: center;
 }
 
-.select-month,
-.select-year {
-    background: var(--bg-card);
+select.form-select.select-month,
+select.form-select.select-year {
+    background-color: var(--bg-card);
     color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 6px 10px;
+    border-color: var(--border);
     font-size: 14px;
     font-family: var(--font-sans);
-    cursor: pointer;
 }
 
-.select-month:focus,
-.select-year:focus {
-    outline: 2px solid var(--accent-dim);
-    outline-offset: 1px;
+select.form-select.select-month:focus,
+select.form-select.select-year:focus {
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 0 .2rem rgba(125,78,45,.25);
 }
 
-/* ── Detail panel ────────────────────────────────────────────────────────── */
+/* ── Detail panel (Bootstrap card) ──────────────────────────────────────── */
 .detail-panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 32px;
-    display: flex;
-    gap: 32px;
-    align-items: center;
+    background: var(--bg-card) !important;
+    border-color: var(--border) !important;
     box-shadow: var(--shadow);
-    flex-wrap: wrap;
+}
+
+.detail-panel .card-body {
+    padding: 24px;
 }
 
 .detail-phase-svg {
@@ -252,6 +214,7 @@ a:hover { text-decoration: underline; }
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px 24px;
+    padding: 0;
 }
 
 .detail-stats li {
@@ -420,12 +383,10 @@ a:hover { text-decoration: underline; }
     line-height: 1;
 }
 
-/* ── Legend section ──────────────────────────────────────────────────────── */
+/* ── Legend section (Bootstrap card) ────────────────────────────────────── */
 .legend-section {
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
 }
 
 .legend-title {
@@ -474,8 +435,6 @@ a:hover { text-decoration: underline; }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .site-main { padding: 20px 12px 32px; }
-
     .calendar-grid { gap: 3px; }
 
     .cal-cell {
@@ -485,7 +444,7 @@ a:hover { text-decoration: underline; }
 
     .cal-day-num { font-size: 11px; }
 
-    .detail-panel {
+    .detail-panel .card-body {
         flex-direction: column;
         align-items: flex-start;
     }

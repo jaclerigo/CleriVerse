@@ -12,6 +12,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config/database.php';
 
+// Detecta o caminho base para deploys em subpasta (ex.: /cleriverse)
+$_docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+$_appDir  = str_replace('\\', '/', __DIR__);
+define('BASE_PATH', ($_docRoot !== '' && strpos($_appDir, $_docRoot) === 0) ? substr($_appDir, strlen($_docRoot)) : '');
+unset($_docRoot, $_appDir);
+
 // Roteamento simples por query-string: ?page=mercury
 $page = $_GET['page'] ?? 'mercury';
 
