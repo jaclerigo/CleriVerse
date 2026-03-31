@@ -66,33 +66,34 @@ $daysJson = json_encode($days);
 
     <!-- ── Navegação de meses ────────────────────────────────────────────── -->
     <div class="month-nav">
-        <a href="/?page=mercury&year=<?= $prevDate->format('Y') ?>&month=<?= (int) $prevDate->format('n') ?>"
+        <a href="<?= BASE_PATH ?>/?page=mercury&year=<?= $prevDate->format('Y') ?>&month=<?= (int) $prevDate->format('n') ?>"
            class="btn btn-nav" title="Mês anterior">&#8592; <?= $monthNames[(int) $prevDate->format('n')] ?></a>
 
-        <form class="month-form" method="get" action="/">
+        <form class="month-form" method="get" action="<?= BASE_PATH ?>/">
             <input type="hidden" name="page" value="mercury">
-            <select name="month" class="select-month" onchange="this.form.submit()">
+            <select name="month" class="form-select form-select-sm select-month" onchange="this.form.submit()">
                 <?php foreach ($monthNames as $m => $name): ?>
                     <option value="<?= $m ?>" <?= $m === $month ? 'selected' : '' ?>><?= $name ?></option>
                 <?php endforeach; ?>
             </select>
-            <select name="year" class="select-year" onchange="this.form.submit()">
+            <select name="year" class="form-select form-select-sm select-year" onchange="this.form.submit()">
                 <?php for ($y = 1900; $y <= 2100; $y++): ?>
                     <option value="<?= $y ?>" <?= $y === $year ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>
         </form>
 
-        <a href="/?page=mercury&year=<?= $nextDate->format('Y') ?>&month=<?= (int) $nextDate->format('n') ?>"
+        <a href="<?= BASE_PATH ?>/?page=mercury&year=<?= $nextDate->format('Y') ?>&month=<?= (int) $nextDate->format('n') ?>"
            class="btn btn-nav" title="Próximo mês"><?= $monthNames[(int) $nextDate->format('n')] ?> &#8594;</a>
     </div>
 
     <!-- ── Painel de detalhe do dia selecionado ──────────────────────────── -->
-    <div class="detail-panel" id="detailPanel">
-        <div class="detail-phase-svg" id="detailPhaseSvg">
-            <?= MercuryCalculator::renderPhaseSvg($selected['illumination'], $selected['is_eastern'], 160) ?>
-        </div>
-        <div class="detail-info">
+    <div class="card detail-panel mb-4" id="detailPanel">
+        <div class="card-body d-flex gap-4 align-items-center flex-wrap">
+            <div class="detail-phase-svg" id="detailPhaseSvg">
+                <?= MercuryCalculator::renderPhaseSvg($selected['illumination'], $selected['is_eastern'], 160) ?>
+            </div>
+            <div class="detail-info flex-grow-1">
             <h2 class="detail-day" id="detailDay">
                 <?= $selectedDay ?> de <?= $monthNames[$month] ?> de <?= $year ?>
             </h2>
@@ -130,8 +131,9 @@ $daysJson = json_encode($days);
                     <?= htmlspecialchars($events[$selectedDay]['label']) ?>
                 </div>
             <?php endif; ?>
-        </div>
-    </div>
+            </div>
+        </div><!-- /.card-body -->
+    </div><!-- /.card -->
 
     <!-- ── Grelha do calendário ──────────────────────────────────────────── -->
     <div class="calendar-section">
@@ -197,7 +199,8 @@ $daysJson = json_encode($days);
     </div><!-- /.calendar-section -->
 
     <!-- ── Legenda ───────────────────────────────────────────────────────── -->
-    <div class="legend-section">
+    <div class="card legend-section">
+        <div class="card-body">
         <h3 class="legend-title">Legenda</h3>
         <div class="legend-items">
             <div class="legend-item">
@@ -235,7 +238,8 @@ $daysJson = json_encode($days);
                 <span>Maior Elongação</span>
             </div>
         </div>
-    </div><!-- /.legend-section -->
+        </div><!-- /.card-body -->
+    </div><!-- /.card -->
 
     <!-- ── Dados em JSON para o JavaScript ───────────────────────────────── -->
     <script>

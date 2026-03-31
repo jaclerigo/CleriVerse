@@ -2,7 +2,8 @@ Options -Indexes
 
 # ── Motor de reescrita (necessário para o router index.php) ─────────────────
 RewriteEngine On
-RewriteBase /
+# Alterar /cleriverse/ para o caminho real do deploy (ex.: / na raiz)
+RewriteBase /cleriverse/
 
 # Redirecionar para HTTPS (descomentar em produção)
 # RewriteCond %{HTTPS} off
