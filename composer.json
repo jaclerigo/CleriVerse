@@ -1,0 +1,19 @@
+{
+    "name": "cleriverse/app",
+    "description": "Aplicação com várias ferramentas para cálculos Astronómicos",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.4",
+        "andrmoel/astronomy-bundle": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CleriVerse\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {}
+    }
+}
