@@ -19,8 +19,8 @@ const MODAL_DELAY_MS       = 800; // aguarda Bootstrap inicializar antes de abri
 
 function cvApplyTheme(theme) {
     document.documentElement.setAttribute('data-bs-theme', theme);
-    localStorage.setItem(CV_THEME_KEY, theme);
     cvUpdateThemeButton(theme);
+    try { localStorage.setItem(CV_THEME_KEY, theme); } catch (e) { /* modo privado ou armazenamento bloqueado */ }
 }
 
 function cvUpdateThemeButton(theme) {
@@ -175,8 +175,15 @@ function cvSaveLocationFromForm() {
 
 document.addEventListener('DOMContentLoaded', function () {
     // Sincronizar botão de tema com o valor guardado
-    const savedTheme = localStorage.getItem(CV_THEME_KEY) || 'dark';
+    let savedTheme = 'dark';
+    try { savedTheme = localStorage.getItem(CV_THEME_KEY) || 'dark'; } catch (e) { /* modo privado */ }
     cvUpdateThemeButton(savedTheme);
+
+    // Ligar botão de alternância de tema
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', toggleTheme);
+    }
 
     // Sincronizar botão de localização
     cvUpdateLocationButton();
