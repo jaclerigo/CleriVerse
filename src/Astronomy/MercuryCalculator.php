@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CleriVerse\Astronomy;
 
-use Andrmoel\AstronomyBundle\AstronomicalObjects\Planets\Mercury;
-use Andrmoel\AstronomyBundle\AstronomicalObjects\Sun;
-use Andrmoel\AstronomyBundle\TimeOfInterest;
+use Carbon\Carbon;
+use deepskylog\AstronomyLibrary\Targets\Earth;
+use deepskylog\AstronomyLibrary\Targets\Mercury;
+use deepskylog\AstronomyLibrary\Targets\Sun;
 
 /**
  * Calcula as fases de Mercúrio usando os algoritmos de Jean Meeus
@@ -51,23 +52,36 @@ class MercuryCalculator
      */
     public function getDayData(int $year, int $month, int $day): array
     {
-        $toi     = TimeOfInterest::create($year, $month, $day, 12, 0, 0);
-        $mercury = Mercury::create($toi);
-        $sun     = Sun::create($toi);
+        $date    = Carbon::create($year, $month, $day, 12, 0, 0, 'UTC');
+        $mercury = new Mercury();
+        $earth   = new Earth();
+        $sun     = new Sun();
+
+        // Coordenadas heliocentricas VSOP87: [L (graus), B (graus), R (AU)]
+        $mercuryHel = $mercury->calculateHeliocentricCoordinates($date);
+        $earthHel   = $earth->calculateHeliocentricCoordinates($date);
 
         // Distância heliocêntrica de Mercúrio (r)
-        $mercuryHel = $mercury->getHeliocentricEclipticalSphericalCoordinates();
-        $r          = $mercuryHel->getRadiusVector(); // AU
+        $r = $mercuryHel[2]; // AU
 
-        // Coordenadas geocêntricas eclípticas de Mercúrio
-        $mercuryGeo = $mercury->getGeocentricEclipticalSphericalCoordinates();
-        $delta      = $mercuryGeo->getRadiusVector(); // AU
-        $mercuryLon = $mercuryGeo->getLongitude();    // graus
+        // Coordenadas retangulares geocêntricas de Mercúrio
+        $x = $mercuryHel[2] * cos(deg2rad($mercuryHel[1])) * cos(deg2rad($mercuryHel[0]))
+           - $earthHel[2]   * cos(deg2rad($earthHel[1]))   * cos(deg2rad($earthHel[0]));
+        $y = $mercuryHel[2] * cos(deg2rad($mercuryHel[1])) * sin(deg2rad($mercuryHel[0]))
+           - $earthHel[2]   * cos(deg2rad($earthHel[1]))   * sin(deg2rad($earthHel[0]));
+        $z = $mercuryHel[2] * sin(deg2rad($mercuryHel[1]))
+           - $earthHel[2]   * sin(deg2rad($earthHel[1]));
 
-        // Coordenadas geocêntricas do Sol (R = distância Terra–Sol)
-        $sunGeo = $sun->getGeocentricEclipticalSphericalCoordinates();
-        $R      = $sunGeo->getRadiusVector();  // AU
-        $sunLon = $sunGeo->getLongitude();     // graus
+        // Δ = distância geocêntrica de Mercúrio (AU)
+        $delta = sqrt($x ** 2 + $y ** 2 + $z ** 2);
+
+        // Longitude eclíptica geocêntrica de Mercúrio (graus)
+        $mercuryLon = rad2deg(atan2($y, $x));
+
+        // Dados geocêntricos do Sol: [Odot (graus), beta (graus), R (AU)]
+        $sunData = $sun->calculateOdotBetaR($date);
+        $R      = $sunData[2]; // distância Terra–Sol (AU)
+        $sunLon = $sunData[0]; // longitude eclíptica geocêntrica do Sol (graus)
 
         // Ângulo de fase (Meeus 41.2)
         $cosI = ($r * $r + $delta * $delta - $R * $R) / (2.0 * $r * $delta);

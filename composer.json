@@ -4,7 +4,7 @@
     "type": "project",
     "license": "MIT",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "deepskylog/laravel-astronomy-library": "^6.7"
     },
     "autoload": {
