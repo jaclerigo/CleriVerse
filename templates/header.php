@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CleriVerse – Ferramentas Astronómicas</title>
+    <!-- Aplicar tema antes do render para evitar flash de conteúdo não estilizado -->
+    <script>(function () {
+        var t = localStorage.getItem('cleriverse_theme');
+        if (t === 'light' || t === 'dark') {
+            document.documentElement.setAttribute('data-bs-theme', t);
+        }
+    }());</script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
           integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/css/style.css">
@@ -19,6 +26,16 @@
             <span class="logo-icon">🪐</span>
             <span class="logo-text">CleriVerse</span>
         </a>
+        <!-- Botões de acção sempre visíveis (fora do collapse) -->
+        <div class="d-flex align-items-center gap-1 ms-auto me-2">
+            <button id="locationBtn" class="navbar-action-btn"
+                    title="Definir localização para cálculos mais precisos"
+                    aria-label="Definir localização">📍</button>
+            <button id="themeToggleBtn" class="navbar-action-btn"
+                    title="Mudar para tema claro"
+                    aria-label="Alternar tema"
+                    onclick="toggleTheme()">☀️</button>
+        </div>
         <button class="navbar-toggler" type="button"
                 data-bs-toggle="collapse" data-bs-target="#mainNav"
                 aria-controls="mainNav" aria-expanded="false"
