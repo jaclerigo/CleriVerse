@@ -35,6 +35,37 @@
     --shadow:        0 4px 24px rgba(0,0,0,0.5);
 }
 
+/* ── Tema claro ──────────────────────────────────────────────────────────── */
+[data-bs-theme="light"] {
+    --bs-body-bg:         #f6f8fa;
+    --bs-body-color:      #1c2128;
+    --bs-card-bg:         #ffffff;
+    --bs-border-color:    #d0d7de;
+    --bs-secondary-bg:    #eaeef2;
+
+    --bg-body:       #f6f8fa;
+    --bg-surface:    #eaeef2;
+    --bg-card:       #ffffff;
+    --bg-hover:      #d0d7de;
+    --border:        #d0d7de;
+    --text-primary:  #1c2128;
+    --text-secondary:#424a53;
+    --text-muted:    #6e7781;
+    --accent:        #bf4a0c;   /* laranja-âmbar de Mercúrio (mais escuro para contraste) */
+    --accent-dim:    #e8a87c;
+    --highlight:     #0969da;
+    --today-bg:      #ddf4ff;
+    --today-border:  #0969da;
+    --selected-bg:   #f3eeff;
+    --selected-border:#8250df;
+    --event-gold:    #9a6700;
+    --shadow:        0 4px 24px rgba(0,0,0,0.12);
+}
+
+[data-bs-theme="light"] .site-navbar .navbar-toggler-icon {
+    filter: none;
+}
+
 /* ── Base ────────────────────────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
@@ -93,6 +124,30 @@ a:hover { color: var(--accent); }
     color: var(--text-primary);
     background: var(--bg-hover);
     text-decoration: none;
+}
+
+/* ── Botões de acção da navbar (tema e localização) ─────────────────────── */
+.navbar-action-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 15px;
+    padding: 4px 8px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.navbar-action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-dim);
+    color: var(--text-primary);
+}
+
+.navbar-action-btn.location-set {
+    border-color: var(--accent-dim);
+    color: var(--accent);
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
