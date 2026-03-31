@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c5c571cdb1c1d7d9026d6e07642fc33",
+    "content-hash": "1812c9208fcb3526d83d3bf0cc1cc2e8",
     "packages": [
         {
             "name": "andrmoel/astronomy-bundle",
@@ -62,8 +62,5 @@
         "php": ">=7.4"
     },
     "platform-dev": {},
-    "platform-overrides": {
-        "php": "7.4.0"
-    },
     "plugin-api-version": "2.9.0"
 }

@@ -1,0 +1,23 @@
+# Dependências do Composer
+/vendor/
+
+# Ficheiros de ambiente e configuração local
+.env
+.env.local
+*.local.php
+
+# Ficheiros temporários e artefactos de build
+/tmp/
+
+# IDEs e editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

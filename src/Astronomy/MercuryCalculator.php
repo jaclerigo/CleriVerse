@@ -198,10 +198,9 @@ class MercuryCalculator
         bool $isEastern,
         int $size = 44
     ): string {
-        $r   = ($size / 2.0) - 2.0;
+        $r   = round(($size / 2.0) - 2.0, 3);
         $cx  = $size / 2.0;
         $cy  = $size / 2.0;
-        $r   = round($r, 3);
 
         $attrs  = "width=\"{$size}\" height=\"{$size}\" "
                 . "viewBox=\"0 0 {$size} {$size}\" "

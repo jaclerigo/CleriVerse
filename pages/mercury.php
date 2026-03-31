@@ -77,7 +77,7 @@ $daysJson = json_encode($days);
                 <?php endforeach; ?>
             </select>
             <select name="year" class="select-year" onchange="this.form.submit()">
-                <?php for ($y = 1950; $y <= 2100; $y++): ?>
+                <?php for ($y = 1900; $y <= 2100; $y++): ?>
                     <option value="<?= $y ?>" <?= $y === $year ? 'selected' : '' ?>><?= $y ?></option>
                 <?php endfor; ?>
             </select>

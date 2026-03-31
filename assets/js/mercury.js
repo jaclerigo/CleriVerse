@@ -86,14 +86,7 @@ function renderPhaseSvg(illumination, isEastern, size) {
     return svg;
 }
 
-/* ── Actualização do painel de detalhe ────────────────────────────────────── */
-
-const MONTH_NAMES_PT = [
-    'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro',
-];
-
-/**
+/* ── Actualização do painel de detalhe ────────────────────────────────────── *//**
  * Chamada quando o utilizador clica numa célula do calendário.
  * Actualiza o painel de detalhe sem recarregar a página.
  *
@@ -113,7 +106,7 @@ function selectDay(cell) {
     cell.classList.add('cal-selected');
 
     // Actualizar texto do dia
-    const monthName = MONTH_NAMES_PT[month - 1];
+    const monthName = MONTH_NAMES[month - 1];
     const detailDay = document.getElementById('detailDay');
     if (detailDay) {
         detailDay.textContent = `${day} de ${monthName} de ${year}`;

@@ -13,9 +13,7 @@
         }
     },
     "config": {
-        "platform": {
-            "php": "7.4.0"
-        },
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "allow-plugins": {}
     }
 }

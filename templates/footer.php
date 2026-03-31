@@ -5,6 +5,8 @@
         <span class="footer-note">Algoritmos baseados em Jean Meeus <em>Astronomical Algorithms</em> (VSOP87)</span>
     </div>
 </footer>
+<?php if (($page ?? '') === 'mercury'): ?>
 <script src="/assets/js/mercury.js"></script>
+<?php endif; ?>
 </body>
 </html>
