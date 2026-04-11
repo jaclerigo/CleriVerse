@@ -23,6 +23,7 @@ class MercuryCalculator
     private const MERCURY_MAG_PHASE_L1 = 0.0380;
     private const MERCURY_MAG_PHASE_L2 = 0.000273;
     private const MERCURY_MAG_PHASE_L3 = 0.000002;
+    private const MIN_MAG_DISTANCE_FACTOR = 1.0e-8;
 
     /**
      * Devolve os dados de fase para todos os dias de um mês.
@@ -191,7 +192,7 @@ class MercuryCalculator
      */
     private function calculateVisualMagnitude(float $r, float $delta, float $phaseAngle): float
     {
-        $distanceFactor = max(1.0e-8, $r * $delta);
+        $distanceFactor = max(self::MIN_MAG_DISTANCE_FACTOR, $r * $delta);
 
         return self::MERCURY_MAG_BASE
             + (5.0 * log10($distanceFactor))

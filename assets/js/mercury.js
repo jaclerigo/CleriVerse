@@ -18,6 +18,8 @@ const GST0_LINEAR_DEG = 36000.770053608;
 const GST0_QUADRATIC_DEG = 0.000387933;
 const GST0_CUBIC_DIVISOR = 38710000;
 const JULIAN_DAY_J2000 = 2451545.0;
+const NEVER_RISES_LIMIT = 1;
+const ALWAYS_VISIBLE_LIMIT = -1;
 
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
@@ -270,7 +272,7 @@ function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinatio
     );
     const transitTime = formatUtcTimeFromFraction(transitFraction);
 
-    if (cosH0 > 1) {
+    if (cosH0 > NEVER_RISES_LIMIT) {
         return {
             riseAzimuth: '--',
             riseTime: '--',
@@ -279,7 +281,7 @@ function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinatio
         };
     }
 
-    if (cosH0 < -1) {
+    if (cosH0 < ALWAYS_VISIBLE_LIMIT) {
         return {
             riseAzimuth: 'Circumpolar',
             riseTime: 'Sempre visível',
@@ -306,7 +308,8 @@ function calculateAzimuthAtRise(latitudeDeg, declinationDeg, hourAngleDeg) {
     const latitude = degToRad(latitudeDeg);
     const declination = degToRad(declinationDeg);
     const altitude = degToRad(STANDARD_ALTITUDE_DEG);
-    const hourAngle = degToRad(-Math.abs(hourAngleDeg));
+    const negativeHourAngle = -Math.abs(hourAngleDeg);
+    const hourAngle = degToRad(negativeHourAngle);
 
     const sinA = (Math.cos(declination) * Math.sin(hourAngle)) / Math.cos(altitude);
     const cosA = (
