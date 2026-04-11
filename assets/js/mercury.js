@@ -292,8 +292,9 @@ function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinatio
     }
 
     const h0 = radToDeg(Math.acos(clamp(cosH0, -1, 1)));
-    const riseFraction = normalizeFraction(transitFraction - (h0 / SIDEREAL_RATE_DEG_PER_DAY));
-    const setFraction = normalizeFraction(transitFraction + (h0 / SIDEREAL_RATE_DEG_PER_DAY));
+    const hourAngleDayFraction = h0 / SIDEREAL_RATE_DEG_PER_DAY;
+    const riseFraction = normalizeFraction(transitFraction - hourAngleDayFraction);
+    const setFraction = normalizeFraction(transitFraction + hourAngleDayFraction);
 
     const riseAzimuth = calculateAzimuthAtRise(latitudeDeg, declinationDeg, h0);
 
@@ -356,9 +357,10 @@ function normalizeFraction(value) {
 }
 
 function formatUtcTimeFromFraction(dayFraction) {
-    const totalMinutes = Math.round(normalizeFraction(dayFraction) * MINUTES_PER_DAY);
-    const hours = Math.floor((totalMinutes % MINUTES_PER_DAY) / 60);
-    const minutes = totalMinutes % 60;
+    const roundedMinutes = Math.round(normalizeFraction(dayFraction) * MINUTES_PER_DAY);
+    const minutesOfDay = roundedMinutes === MINUTES_PER_DAY ? 0 : roundedMinutes;
+    const hours = Math.floor(minutesOfDay / 60);
+    const minutes = minutesOfDay % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} UTC`;
 }
 
