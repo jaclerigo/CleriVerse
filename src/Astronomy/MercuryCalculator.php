@@ -80,6 +80,8 @@ class MercuryCalculator
 
         // Longitude eclíptica geocêntrica de Mercúrio (graus)
         $mercuryLon = rad2deg(atan2($y, $x));
+        $mercuryGeoLon = $this->normalizeDegrees($mercuryLon);
+        $mercuryGeoLat = rad2deg(atan2($z, sqrt($x ** 2 + $y ** 2)));
 
         // Dados geocêntricos do Sol: [Odot (graus), beta (graus), R (AU)]
         $sunData = $sun->calculateOdotBetaR($date);
@@ -93,6 +95,24 @@ class MercuryCalculator
 
         // Fração iluminada (Meeus 41.1)
         $illumination = (1.0 + cos(deg2rad($phaseAngle))) / 2.0;
+        $magnitude = $this->calculateVisualMagnitude($r, $delta, $phaseAngle);
+
+        // Conversão aproximada para coordenadas equatoriais geocêntricas (J2000)
+        $jd = ((float) $date->getTimestamp() / 86400.0) + 2440587.5;
+        $julianCentury = ($jd - 2451545.0) / 36525.0;
+        $obliquity = 23.439291 - 0.0130042 * $julianCentury;
+
+        $lambda = deg2rad($mercuryGeoLon);
+        $beta = deg2rad($mercuryGeoLat);
+        $epsilon = deg2rad($obliquity);
+
+        $sinDec = sin($beta) * cos($epsilon) + cos($beta) * sin($epsilon) * sin($lambda);
+        $sinDec = max(-1.0, min(1.0, $sinDec));
+        $declination = rad2deg(asin($sinDec));
+
+        $yEq = sin($lambda) * cos($epsilon) - tan($beta) * sin($epsilon);
+        $xEq = cos($lambda);
+        $rightAscension = $this->normalizeDegrees(rad2deg(atan2($yEq, $xEq)));
 
         // Elongação (positivo = Este, negativo = Oeste)
         $elongation = $mercuryLon - $sunLon;
@@ -118,6 +138,9 @@ class MercuryCalculator
             'star_type'      => $isEastern ? 'Estrela da Tarde' : 'Estrela da Manhã',
             'visibility_window' => $isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol',
             'max_visibility_altitude' => round($maxVisibilityAltitude, 1),
+            'magnitude'      => round($magnitude, 2),
+            'right_ascension' => round($rightAscension, 4),
+            'declination'    => round($declination, 4),
             'phase_name'     => $this->getPhaseName($illumination),
             'distance_au'    => round($delta, 4),
             'helio_dist_au'  => round($r, 4),
@@ -155,6 +178,29 @@ class MercuryCalculator
         return self::EARTH_AXIAL_TILT_DEG * sin(
             deg2rad((360.0 / $daysInYear) * ($dayOfYear - self::VERNAL_EQUINOX_APPROX_DAY))
         );
+    }
+
+    /**
+     * Estima a magnitude visual aparente de Mercúrio (aproximação fotométrica).
+     */
+    private function calculateVisualMagnitude(float $r, float $delta, float $phaseAngle): float
+    {
+        $distanceFactor = max(1.0e-8, $r * $delta);
+
+        return -0.42
+            + (5.0 * log10($distanceFactor))
+            + (0.0380 * $phaseAngle)
+            - (0.000273 * ($phaseAngle ** 2))
+            + (0.000002 * ($phaseAngle ** 3));
+    }
+
+    /**
+     * Normaliza um ângulo para o intervalo [0, 360).
+     */
+    private function normalizeDegrees(float $degrees): float
+    {
+        $normalized = fmod($degrees, 360.0);
+        return $normalized < 0.0 ? $normalized + 360.0 : $normalized;
     }
 
     /**

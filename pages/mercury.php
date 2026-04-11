@@ -127,6 +127,26 @@ $daysJson = json_encode($days);
                     </span>
                 </li>
                 <li>
+                    <span class="stat-label">Magnitude</span>
+                    <span class="stat-value" id="dMagnitude"><?= $selected['magnitude'] ?></span>
+                </li>
+                <li>
+                    <span class="stat-label">Azimute (nascimento)</span>
+                    <span class="stat-value" id="dAzimuth">--</span>
+                </li>
+                <li>
+                    <span class="stat-label">Hora nascimento</span>
+                    <span class="stat-value" id="dRiseTime">--</span>
+                </li>
+                <li>
+                    <span class="stat-label">Hora trânsito</span>
+                    <span class="stat-value" id="dTransitTime">--</span>
+                </li>
+                <li>
+                    <span class="stat-label">Hora ocaso</span>
+                    <span class="stat-value" id="dSetTime">--</span>
+                </li>
+                <li>
                     <span class="stat-label">Dist. Geocêntrica</span>
                     <span class="stat-value" id="dDist"><?= $selected['distance_au'] ?> AU</span>
                 </li>
@@ -181,6 +201,11 @@ $daysJson = json_encode($days);
                      data-star-type="<?= htmlspecialchars($dayData['star_type']) ?>"
                      data-phase-name="<?= htmlspecialchars($dayData['phase_name']) ?>"
                      data-dist="<?= $dayData['distance_au'] ?>"
+                     data-max-altitude="<?= $dayData['max_visibility_altitude'] ?>"
+                     data-visibility-window="<?= htmlspecialchars($dayData['visibility_window']) ?>"
+                     data-magnitude="<?= $dayData['magnitude'] ?>"
+                     data-right-ascension="<?= $dayData['right_ascension'] ?>"
+                     data-declination="<?= $dayData['declination'] ?>"
                      onclick="selectDay(this)">
 
                     <span class="cal-day-num"><?= $d ?></span>

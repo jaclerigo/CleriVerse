@@ -11,6 +11,8 @@
 const CV_LOCATION_STORAGE_KEY = 'cleriverse_location';
 const EARTH_AXIAL_TILT_DEG = 23.44;
 const VERNAL_EQUINOX_APPROX_DAY = 81;
+const STANDARD_ALTITUDE_DEG = -0.5667;
+const SIDEREAL_RATE_DEG_PER_DAY = 360.98564736629;
 
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
@@ -122,8 +124,10 @@ function selectDay(cell) {
     setText('dPhaseAngle',  cell.dataset.phaseAngle + '°');
     setText('dElongation',  cell.dataset.elongation + '° ' + cell.dataset.direction);
     setText('dStarType',    cell.dataset.starType);
+    setText('dMagnitude',   cell.dataset.magnitude);
     setText('dDist',        cell.dataset.dist + ' AU');
     updateDetailMaxAltitude(cell);
+    updateDetailObservationTimes(cell);
 
     // Actualizar SVG grande
     const container = document.getElementById('detailPhaseSvg');
@@ -139,15 +143,19 @@ function setText(id, value) {
     if (el) el.textContent = value;
 }
 
-function getSavedLatitude() {
+function getSavedLocation() {
     try {
         const raw = localStorage.getItem(CV_LOCATION_STORAGE_KEY);
-        if (!raw) return 0;
+        if (!raw) return { lat: 0, lon: 0 };
         const location = JSON.parse(raw);
         const latitude = Number(location?.lat);
-        return Number.isFinite(latitude) ? latitude : 0;
+        const longitude = Number(location?.lon);
+        return {
+            lat: Number.isFinite(latitude) ? latitude : 0,
+            lon: Number.isFinite(longitude) ? longitude : 0,
+        };
     } catch (e) {
-        return 0;
+        return { lat: 0, lon: 0 };
     }
 }
 
@@ -190,20 +198,159 @@ function clamp(value, min, max) {
 }
 
 function updateDetailMaxAltitude(cell) {
-    const latitude = getSavedLatitude();
+    const location = getSavedLocation();
     const day = parseInt(cell.dataset.day, 10);
     const year = parseInt(cell.dataset.year, 10);
     const month = parseInt(cell.dataset.month, 10);
     const isEastern = cell.dataset.isEastern === '1';
-    const maxAltitude = estimateMaxVisibilityAltitude(
+    const fallbackMaxAltitude = Number.parseFloat(cell.dataset.maxAltitude);
+    const estimatedMaxAltitude = estimateMaxVisibilityAltitude(
         Math.abs(parseFloat(cell.dataset.elongation)),
         year,
         month,
         day,
-        latitude
+        location.lat
     );
-    const visibilityWindow = isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol';
+    const maxAltitude = Number.isFinite(estimatedMaxAltitude)
+        ? estimatedMaxAltitude
+        : (Number.isFinite(fallbackMaxAltitude) ? fallbackMaxAltitude : 0);
+    const visibilityWindow = cell.dataset.visibilityWindow || (isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol');
     setText('dMaxAlt', maxAltitude.toFixed(1) + '° ' + visibilityWindow);
+}
+
+function updateDetailObservationTimes(cell) {
+    const location = getSavedLocation();
+    const year = parseInt(cell.dataset.year, 10);
+    const month = parseInt(cell.dataset.month, 10);
+    const day = parseInt(cell.dataset.day, 10);
+    const rightAscension = parseFloat(cell.dataset.rightAscension);
+    const declination = parseFloat(cell.dataset.declination);
+
+    if (!Number.isFinite(rightAscension) || !Number.isFinite(declination)) {
+        setText('dAzimuth', '--');
+        setText('dRiseTime', '--');
+        setText('dTransitTime', '--');
+        setText('dSetTime', '--');
+        return;
+    }
+
+    const events = calculateRiseTransitSet(
+        year,
+        month,
+        day,
+        rightAscension,
+        declination,
+        location.lat,
+        location.lon
+    );
+
+    setText('dAzimuth', events.riseAzimuth);
+    setText('dRiseTime', events.riseTime);
+    setText('dTransitTime', events.transitTime);
+    setText('dSetTime', events.setTime);
+}
+
+function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinationDeg, latitudeDeg, longitudeDeg) {
+    const latitude = degToRad(latitudeDeg);
+    const declination = degToRad(declinationDeg);
+    const altitude = degToRad(STANDARD_ALTITUDE_DEG);
+    const cosH0 = (
+        (Math.sin(altitude) - Math.sin(latitude) * Math.sin(declination)) /
+        (Math.cos(latitude) * Math.cos(declination))
+    );
+
+    const theta0 = greenwichSiderealTime0h(year, month, day);
+    const transitFraction = normalizeFraction(
+        (rightAscensionDeg - longitudeDeg - theta0) / 360
+    );
+    const transitTime = formatUtcTimeFromFraction(transitFraction);
+
+    if (cosH0 > 1) {
+        return {
+            riseAzimuth: '--',
+            riseTime: '--',
+            transitTime,
+            setTime: '--',
+        };
+    }
+
+    if (cosH0 < -1) {
+        return {
+            riseAzimuth: 'Circumpolar',
+            riseTime: 'Sempre visível',
+            transitTime,
+            setTime: 'Sempre visível',
+        };
+    }
+
+    const h0 = radToDeg(Math.acos(clamp(cosH0, -1, 1)));
+    const riseFraction = normalizeFraction(transitFraction - (h0 / SIDEREAL_RATE_DEG_PER_DAY));
+    const setFraction = normalizeFraction(transitFraction + (h0 / SIDEREAL_RATE_DEG_PER_DAY));
+
+    const riseAzimuth = calculateAzimuthAtRise(latitudeDeg, declinationDeg, h0);
+
+    return {
+        riseAzimuth: Number.isFinite(riseAzimuth) ? `${riseAzimuth.toFixed(1)}°` : '--',
+        riseTime: formatUtcTimeFromFraction(riseFraction),
+        transitTime,
+        setTime: formatUtcTimeFromFraction(setFraction),
+    };
+}
+
+function calculateAzimuthAtRise(latitudeDeg, declinationDeg, hourAngleDeg) {
+    const latitude = degToRad(latitudeDeg);
+    const declination = degToRad(declinationDeg);
+    const altitude = degToRad(STANDARD_ALTITUDE_DEG);
+    const hourAngle = degToRad(-Math.abs(hourAngleDeg));
+
+    const sinA = (Math.cos(declination) * Math.sin(hourAngle)) / Math.cos(altitude);
+    const cosA = (
+        (Math.sin(declination) - Math.sin(altitude) * Math.sin(latitude)) /
+        (Math.cos(altitude) * Math.cos(latitude))
+    );
+
+    return normalizeDegrees(radToDeg(Math.atan2(sinA, cosA)));
+}
+
+function greenwichSiderealTime0h(year, month, day) {
+    const jd = julianDay(year, month, day);
+    const t = (jd - 2451545.0) / 36525.0;
+    const theta = 100.46061837
+        + (36000.770053608 * t)
+        + (0.000387933 * t * t)
+        - ((t * t * t) / 38710000);
+    return normalizeDegrees(theta);
+}
+
+function julianDay(year, month, day) {
+    let y = year;
+    let m = month;
+    if (m <= 2) {
+        y -= 1;
+        m += 12;
+    }
+    const a = Math.floor(y / 100);
+    const b = 2 - a + Math.floor(a / 4);
+    return Math.floor(365.25 * (y + 4716))
+        + Math.floor(30.6001 * (m + 1))
+        + day + b - 1524.5;
+}
+
+function normalizeDegrees(value) {
+    const normalized = value % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+}
+
+function normalizeFraction(value) {
+    const normalized = value % 1;
+    return normalized < 0 ? normalized + 1 : normalized;
+}
+
+function formatUtcTimeFromFraction(dayFraction) {
+    const totalMinutes = Math.round(normalizeFraction(dayFraction) * 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} UTC`;
 }
 
 /* ── Inicialização ────────────────────────────────────────────────────────── */
@@ -213,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const selected = document.querySelector('.cal-cell.cal-selected');
     if (selected) {
         updateDetailMaxAltitude(selected);
+        updateDetailObservationTimes(selected);
         selected.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 });
