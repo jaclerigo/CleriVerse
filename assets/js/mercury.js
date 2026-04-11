@@ -195,7 +195,7 @@ function updateDetailMaxAltitude(cell) {
     const month = parseInt(cell.dataset.month, 10);
     const isEastern = cell.dataset.isEastern === '1';
     const maxAltitude = estimateMaxVisibilityAltitude(
-        parseFloat(cell.dataset.elongation),
+        Math.abs(parseFloat(cell.dataset.elongation)),
         year,
         month,
         day,
