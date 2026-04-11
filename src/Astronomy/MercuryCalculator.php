@@ -15,6 +15,9 @@ use deepskylog\AstronomyLibrary\Targets\Sun;
  */
 class MercuryCalculator
 {
+    private const EARTH_AXIAL_TILT_DEG = 23.44;
+    private const VERNAL_EQUINOX_APPROX_DAY = 81;
+
     /**
      * Devolve os dados de fase para todos os dias de um mês.
      *
@@ -100,6 +103,7 @@ class MercuryCalculator
         }
         $isEastern   = $elongation >= 0.0;
         $elongationAbs = abs($elongation);
+        $maxVisibilityAltitude = $this->estimateMaxVisibilityAltitude($elongationAbs, $year, $month, $day);
 
         return [
             'year'           => $year,
@@ -112,10 +116,45 @@ class MercuryCalculator
             'is_eastern'     => $isEastern,
             'direction'      => $isEastern ? 'E' : 'O',
             'star_type'      => $isEastern ? 'Estrela da Tarde' : 'Estrela da Manhã',
+            'visibility_window' => $isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol',
+            'max_visibility_altitude' => round($maxVisibilityAltitude, 1),
             'phase_name'     => $this->getPhaseName($illumination),
             'distance_au'    => round($delta, 4),
             'helio_dist_au'  => round($r, 4),
         ];
+    }
+
+    /**
+     * Estima a altura máxima visível de Mercúrio no crepúsculo (aproximação).
+     */
+    private function estimateMaxVisibilityAltitude(
+        float $elongationAbs,
+        int $year,
+        int $month,
+        int $day,
+        float $latitude = 0.0
+    ): float {
+        $sunDeclination = $this->estimateSunDeclination($year, $month, $day);
+        $eclipticAngle = 90.0 - abs($latitude - $sunDeclination);
+        $eclipticAngle = max(0.0, min(90.0, $eclipticAngle));
+
+        $elongationRad = deg2rad($elongationAbs);
+        $angleRad = deg2rad($eclipticAngle);
+        $maxAltitude = rad2deg(asin(sin($elongationRad) * sin($angleRad)));
+        return max(0.0, min(90.0, $maxAltitude));
+    }
+
+    /**
+     * Estima a declinação solar diária (graus) para aproximações de visibilidade.
+     */
+    private function estimateSunDeclination(int $year, int $month, int $day): float
+    {
+        $date = Carbon::create($year, $month, $day, 0, 0, 0, 'UTC');
+        $dayOfYear = (int) $date->dayOfYear;
+        $daysInYear = (int) $date->daysInYear;
+        return self::EARTH_AXIAL_TILT_DEG * sin(
+            deg2rad((360.0 / $daysInYear) * ($dayOfYear - self::VERNAL_EQUINOX_APPROX_DAY))
+        );
     }
 
     /**

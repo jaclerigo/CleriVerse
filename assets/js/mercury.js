@@ -8,6 +8,10 @@
 
 'use strict';
 
+const CV_LOCATION_STORAGE_KEY = 'cleriverse_location';
+const EARTH_AXIAL_TILT_DEG = 23.44;
+const VERNAL_EQUINOX_APPROX_DAY = 81;
+
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
 /**
@@ -119,6 +123,7 @@ function selectDay(cell) {
     setText('dElongation',  cell.dataset.elongation + '° ' + cell.dataset.direction);
     setText('dStarType',    cell.dataset.starType);
     setText('dDist',        cell.dataset.dist + ' AU');
+    updateDetailMaxAltitude(cell);
 
     // Actualizar SVG grande
     const container = document.getElementById('detailPhaseSvg');
@@ -134,12 +139,80 @@ function setText(id, value) {
     if (el) el.textContent = value;
 }
 
+function getSavedLatitude() {
+    try {
+        const raw = localStorage.getItem(CV_LOCATION_STORAGE_KEY);
+        if (!raw) return 0;
+        const location = JSON.parse(raw);
+        const latitude = Number(location?.lat);
+        return Number.isFinite(latitude) ? latitude : 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function estimateMaxVisibilityAltitude(elongation, year, month, day, latitude) {
+    const dayOfYear = getDayOfYearUtc(year, month, day);
+    const daysInYear = isLeapYear(year) ? 366 : 365;
+    const sunDeclination = estimateSunDeclination(dayOfYear, daysInYear);
+    const eclipticAngle = clamp(90 - Math.abs(latitude - sunDeclination), 0, 90);
+    const elongationRad = degToRad(elongation);
+    const eclipticAngleRad = degToRad(eclipticAngle);
+    return clamp(radToDeg(Math.asin(Math.sin(elongationRad) * Math.sin(eclipticAngleRad))), 0, 90);
+}
+
+function getDayOfYearUtc(year, month, day) {
+    const start = Date.UTC(year, 0, 1);
+    const current = Date.UTC(year, month - 1, day);
+    return Math.floor((current - start) / 86400000) + 1;
+}
+
+function estimateSunDeclination(dayOfYear, daysInYear) {
+    return EARTH_AXIAL_TILT_DEG * Math.sin(
+        degToRad((360 / daysInYear) * (dayOfYear - VERNAL_EQUINOX_APPROX_DAY))
+    );
+}
+
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+}
+
+function degToRad(value) {
+    return value * (Math.PI / 180);
+}
+
+function radToDeg(value) {
+    return value * (180 / Math.PI);
+}
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function updateDetailMaxAltitude(cell) {
+    const latitude = getSavedLatitude();
+    const day = parseInt(cell.dataset.day, 10);
+    const year = parseInt(cell.dataset.year, 10);
+    const month = parseInt(cell.dataset.month, 10);
+    const isEastern = cell.dataset.isEastern === '1';
+    const maxAltitude = estimateMaxVisibilityAltitude(
+        Math.abs(parseFloat(cell.dataset.elongation)),
+        year,
+        month,
+        day,
+        latitude
+    );
+    const visibilityWindow = isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol';
+    setText('dMaxAlt', maxAltitude.toFixed(1) + '° ' + visibilityWindow);
+}
+
 /* ── Inicialização ────────────────────────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', function () {
     // Scroll para a célula seleccionada se estiver fora do viewport
     const selected = document.querySelector('.cal-cell.cal-selected');
     if (selected) {
+        updateDetailMaxAltitude(selected);
         selected.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 });
