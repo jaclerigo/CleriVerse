@@ -18,8 +18,9 @@ const GST0_LINEAR_DEG = 36000.770053608;
 const GST0_QUADRATIC_DEG = 0.000387933;
 const GST0_CUBIC_DIVISOR = 38710000;
 const JULIAN_DAY_J2000 = 2451545.0;
-const NEVER_RISES_LIMIT = 1;
-const ALWAYS_VISIBLE_LIMIT = -1;
+const NEVER_RISES_THRESHOLD = 1;
+const ALWAYS_VISIBLE_THRESHOLD = -1;
+const MINUTES_PER_DAY = 1440;
 
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
@@ -272,7 +273,7 @@ function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinatio
     );
     const transitTime = formatUtcTimeFromFraction(transitFraction);
 
-    if (cosH0 > NEVER_RISES_LIMIT) {
+    if (cosH0 > NEVER_RISES_THRESHOLD) {
         return {
             riseAzimuth: '--',
             riseTime: '--',
@@ -281,7 +282,7 @@ function calculateRiseTransitSet(year, month, day, rightAscensionDeg, declinatio
         };
     }
 
-    if (cosH0 < ALWAYS_VISIBLE_LIMIT) {
+    if (cosH0 < ALWAYS_VISIBLE_THRESHOLD) {
         return {
             riseAzimuth: 'Circumpolar',
             riseTime: 'Sempre visível',
@@ -308,16 +309,16 @@ function calculateAzimuthAtRise(latitudeDeg, declinationDeg, hourAngleDeg) {
     const latitude = degToRad(latitudeDeg);
     const declination = degToRad(declinationDeg);
     const altitude = degToRad(STANDARD_ALTITUDE_DEG);
-    const negativeHourAngle = -Math.abs(hourAngleDeg);
-    const hourAngle = degToRad(negativeHourAngle);
+    const riseHourAngleDeg = -Math.abs(hourAngleDeg);
+    const hourAngle = degToRad(riseHourAngleDeg);
 
-    const sinA = (Math.cos(declination) * Math.sin(hourAngle)) / Math.cos(altitude);
-    const cosA = (
+    const sinAzimuth = (Math.cos(declination) * Math.sin(hourAngle)) / Math.cos(altitude);
+    const cosAzimuth = (
         (Math.sin(declination) - Math.sin(altitude) * Math.sin(latitude)) /
         (Math.cos(altitude) * Math.cos(latitude))
     );
 
-    return normalizeDegrees(radToDeg(Math.atan2(sinA, cosA)));
+    return normalizeDegrees(radToDeg(Math.atan2(sinAzimuth, cosAzimuth)));
 }
 
 function greenwichSiderealTime0h(year, month, day) {
@@ -355,8 +356,8 @@ function normalizeFraction(value) {
 }
 
 function formatUtcTimeFromFraction(dayFraction) {
-    const totalMinutes = Math.round(normalizeFraction(dayFraction) * 1440);
-    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const totalMinutes = Math.round(normalizeFraction(dayFraction) * MINUTES_PER_DAY);
+    const hours = Math.floor((totalMinutes % MINUTES_PER_DAY) / 60);
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} UTC`;
 }
