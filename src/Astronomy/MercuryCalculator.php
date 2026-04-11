@@ -135,7 +135,9 @@ class MercuryCalculator
         $eclipticAngle = 90.0 - abs($latitude - $sunDeclination);
         $eclipticAngle = max(0.0, min(90.0, $eclipticAngle));
 
-        $maxAltitude = $elongationAbs * sin(deg2rad($eclipticAngle));
+        $elongationRad = deg2rad($elongationAbs);
+        $angleRad = deg2rad($eclipticAngle);
+        $maxAltitude = rad2deg(asin(sin($elongationRad) * sin($angleRad)));
         return max(0.0, min(90.0, $maxAltitude));
     }
 
