@@ -15,6 +15,8 @@ use deepskylog\AstronomyLibrary\Targets\Sun;
  */
 class MercuryCalculator
 {
+    private const VERNAL_EQUINOX_APPROX_DAY = 81;
+
     /**
      * Devolve os dados de fase para todos os dias de um mês.
      *
@@ -149,7 +151,9 @@ class MercuryCalculator
         $date = Carbon::create($year, $month, $day, 0, 0, 0, 'UTC');
         $dayOfYear = (int) $date->dayOfYear;
         $daysInYear = (int) $date->daysInYear;
-        return 23.44 * sin(deg2rad((360.0 / $daysInYear) * ($dayOfYear - 81)));
+        return 23.44 * sin(
+            deg2rad((360.0 / $daysInYear) * ($dayOfYear - self::VERNAL_EQUINOX_APPROX_DAY))
+        );
     }
 
     /**

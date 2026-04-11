@@ -9,6 +9,7 @@
 'use strict';
 
 const CV_LOCATION_STORAGE_KEY = 'cleriverse_location';
+const VERNAL_EQUINOX_APPROX_DAY = 81;
 
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
@@ -166,7 +167,9 @@ function getDayOfYearUtc(year, month, day) {
 }
 
 function estimateSunDeclination(dayOfYear, daysInYear) {
-    return 23.44 * Math.sin(degToRad((360 / daysInYear) * (dayOfYear - 81)));
+    return 23.44 * Math.sin(
+        degToRad((360 / daysInYear) * (dayOfYear - VERNAL_EQUINOX_APPROX_DAY))
+    );
 }
 
 function isLeapYear(year) {
