@@ -121,6 +121,12 @@ $daysJson = json_encode($days);
                     <span class="stat-value" id="dStarType"><?= htmlspecialchars($selected['star_type']) ?></span>
                 </li>
                 <li>
+                    <span class="stat-label">Altura Máx. (aprox.)</span>
+                    <span class="stat-value" id="dMaxAlt">
+                        <?= $selected['max_visibility_altitude'] ?>° <?= htmlspecialchars($selected['visibility_window']) ?>
+                    </span>
+                </li>
+                <li>
                     <span class="stat-label">Dist. Geocêntrica</span>
                     <span class="stat-value" id="dDist"><?= $selected['distance_au'] ?> AU</span>
                 </li>

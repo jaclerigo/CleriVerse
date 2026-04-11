@@ -8,6 +8,8 @@
 
 'use strict';
 
+const CV_LOCATION_STORAGE_KEY = 'cleriverse_location';
+
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
 /**
@@ -119,6 +121,16 @@ function selectDay(cell) {
     setText('dElongation',  cell.dataset.elongation + '° ' + cell.dataset.direction);
     setText('dStarType',    cell.dataset.starType);
     setText('dDist',        cell.dataset.dist + ' AU');
+    const latitude = getSavedLatitude();
+    const maxAltitude = estimateMaxVisibilityAltitude(
+        parseFloat(cell.dataset.elongation),
+        year,
+        month,
+        day,
+        latitude
+    );
+    const visibilityWindow = isEastern ? 'após o pôr do Sol' : 'antes do nascer do Sol';
+    setText('dMaxAlt', maxAltitude.toFixed(1) + '° ' + visibilityWindow);
 
     // Actualizar SVG grande
     const container = document.getElementById('detailPhaseSvg');
@@ -134,12 +146,50 @@ function setText(id, value) {
     if (el) el.textContent = value;
 }
 
+function getSavedLatitude() {
+    try {
+        const raw = localStorage.getItem(CV_LOCATION_STORAGE_KEY);
+        if (!raw) return 0;
+        const location = JSON.parse(raw);
+        const latitude = Number(location && location.lat);
+        return Number.isFinite(latitude) ? latitude : 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function estimateMaxVisibilityAltitude(elongation, year, month, day, latitude) {
+    const dayOfYear = getDayOfYearUtc(year, month, day);
+    const sunDeclination = estimateSunDeclination(dayOfYear);
+    const eclipticAngle = clamp(90 - Math.abs(latitude - sunDeclination), 0, 90);
+    return clamp(elongation * Math.sin(degToRad(eclipticAngle)), 0, 90);
+}
+
+function getDayOfYearUtc(year, month, day) {
+    const start = Date.UTC(year, 0, 1);
+    const current = Date.UTC(year, month - 1, day);
+    return Math.floor((current - start) / 86400000) + 1;
+}
+
+function estimateSunDeclination(dayOfYear) {
+    return 23.44 * Math.sin(degToRad((360 / 365) * (dayOfYear - 81)));
+}
+
+function degToRad(value) {
+    return value * (Math.PI / 180);
+}
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
 /* ── Inicialização ────────────────────────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', function () {
     // Scroll para a célula seleccionada se estiver fora do viewport
     const selected = document.querySelector('.cal-cell.cal-selected');
     if (selected) {
+        selectDay(selected);
         selected.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 });
