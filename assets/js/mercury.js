@@ -151,7 +151,8 @@ function getSavedLatitude() {
 
 function estimateMaxVisibilityAltitude(elongation, year, month, day, latitude) {
     const dayOfYear = getDayOfYearUtc(year, month, day);
-    const sunDeclination = estimateSunDeclination(dayOfYear);
+    const daysInYear = isLeapYear(year) ? 366 : 365;
+    const sunDeclination = estimateSunDeclination(dayOfYear, daysInYear);
     const eclipticAngle = clamp(90 - Math.abs(latitude - sunDeclination), 0, 90);
     const elongationRad = degToRad(elongation);
     const eclipticAngleRad = degToRad(eclipticAngle);
@@ -164,8 +165,12 @@ function getDayOfYearUtc(year, month, day) {
     return Math.floor((current - start) / 86400000) + 1;
 }
 
-function estimateSunDeclination(dayOfYear) {
-    return 23.44 * Math.sin(degToRad((360 / 365) * (dayOfYear - 81)));
+function estimateSunDeclination(dayOfYear, daysInYear) {
+    return 23.44 * Math.sin(degToRad((360 / daysInYear) * (dayOfYear - 81)));
+}
+
+function isLeapYear(year) {
+    return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
 }
 
 function degToRad(value) {

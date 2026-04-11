@@ -148,7 +148,8 @@ class MercuryCalculator
     {
         $date = Carbon::create($year, $month, $day, 0, 0, 0, 'UTC');
         $dayOfYear = (int) $date->dayOfYear;
-        return 23.44 * sin(deg2rad((360.0 / 365.0) * ($dayOfYear - 81)));
+        $daysInYear = (int) $date->daysInYear;
+        return 23.44 * sin(deg2rad((360.0 / $daysInYear) * ($dayOfYear - 81)));
     }
 
     /**
