@@ -15,6 +15,7 @@ use deepskylog\AstronomyLibrary\Targets\Sun;
  */
 class MercuryCalculator
 {
+    private const EARTH_AXIAL_TILT_DEG = 23.44;
     private const VERNAL_EQUINOX_APPROX_DAY = 81;
 
     /**
@@ -151,7 +152,7 @@ class MercuryCalculator
         $date = Carbon::create($year, $month, $day, 0, 0, 0, 'UTC');
         $dayOfYear = (int) $date->dayOfYear;
         $daysInYear = (int) $date->daysInYear;
-        return 23.44 * sin(
+        return self::EARTH_AXIAL_TILT_DEG * sin(
             deg2rad((360.0 / $daysInYear) * ($dayOfYear - self::VERNAL_EQUINOX_APPROX_DAY))
         );
     }
