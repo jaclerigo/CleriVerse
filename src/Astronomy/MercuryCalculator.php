@@ -17,6 +17,12 @@ class MercuryCalculator
 {
     private const EARTH_AXIAL_TILT_DEG = 23.44;
     private const VERNAL_EQUINOX_APPROX_DAY = 81;
+    private const J2000_MEAN_OBLIQUITY_DEG = 23.439291;
+    private const OBLIQUITY_RATE_DEG_PER_CENTURY = 0.0130042;
+    private const MERCURY_MAG_BASE = -0.42;
+    private const MERCURY_MAG_PHASE_L1 = 0.0380;
+    private const MERCURY_MAG_PHASE_L2 = 0.000273;
+    private const MERCURY_MAG_PHASE_L3 = 0.000002;
 
     /**
      * Devolve os dados de fase para todos os dias de um mês.
@@ -100,7 +106,7 @@ class MercuryCalculator
         // Conversão aproximada para coordenadas equatoriais geocêntricas (J2000)
         $jd = ((float) $date->getTimestamp() / 86400.0) + 2440587.5;
         $julianCentury = ($jd - 2451545.0) / 36525.0;
-        $obliquity = 23.439291 - 0.0130042 * $julianCentury;
+        $obliquity = self::J2000_MEAN_OBLIQUITY_DEG - self::OBLIQUITY_RATE_DEG_PER_CENTURY * $julianCentury;
 
         $lambda = deg2rad($mercuryGeoLon);
         $beta = deg2rad($mercuryGeoLat);
@@ -187,11 +193,11 @@ class MercuryCalculator
     {
         $distanceFactor = max(1.0e-8, $r * $delta);
 
-        return -0.42
+        return self::MERCURY_MAG_BASE
             + (5.0 * log10($distanceFactor))
-            + (0.0380 * $phaseAngle)
-            - (0.000273 * ($phaseAngle ** 2))
-            + (0.000002 * ($phaseAngle ** 3));
+            + (self::MERCURY_MAG_PHASE_L1 * $phaseAngle)
+            - (self::MERCURY_MAG_PHASE_L2 * ($phaseAngle ** 2))
+            + (self::MERCURY_MAG_PHASE_L3 * ($phaseAngle ** 3));
     }
 
     /**

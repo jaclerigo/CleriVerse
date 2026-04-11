@@ -13,6 +13,11 @@ const EARTH_AXIAL_TILT_DEG = 23.44;
 const VERNAL_EQUINOX_APPROX_DAY = 81;
 const STANDARD_ALTITUDE_DEG = -0.5667;
 const SIDEREAL_RATE_DEG_PER_DAY = 360.98564736629;
+const GST0_BASE_DEG = 100.46061837;
+const GST0_LINEAR_DEG = 36000.770053608;
+const GST0_QUADRATIC_DEG = 0.000387933;
+const GST0_CUBIC_DIVISOR = 38710000;
+const JULIAN_DAY_J2000 = 2451545.0;
 
 /* ── Desenhador de fases SVG ──────────────────────────────────────────────── */
 
@@ -314,11 +319,11 @@ function calculateAzimuthAtRise(latitudeDeg, declinationDeg, hourAngleDeg) {
 
 function greenwichSiderealTime0h(year, month, day) {
     const jd = julianDay(year, month, day);
-    const t = (jd - 2451545.0) / 36525.0;
-    const theta = 100.46061837
-        + (36000.770053608 * t)
-        + (0.000387933 * t * t)
-        - ((t * t * t) / 38710000);
+    const t = (jd - JULIAN_DAY_J2000) / 36525.0;
+    const theta = GST0_BASE_DEG
+        + (GST0_LINEAR_DEG * t)
+        + (GST0_QUADRATIC_DEG * t * t)
+        - ((t * t * t) / GST0_CUBIC_DIVISOR);
     return normalizeDegrees(theta);
 }
 
